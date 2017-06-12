@@ -1,0 +1,158 @@
+.chat-window{
+	width: 1050px;
+	height: 600px;
+}
+.left-panel {
+	float: left;
+    height: 100%;
+    width: 60px;
+    border: 2px solid #EDEDED;
+    background-color: #CCCCCC;
+
+}
+
+.center-panel {
+	float: left;
+    height: 100%;
+    width: 240px;
+
+    border-top: 2px solid #eee;
+    border-bottom: 2px solid #eee;
+    background-color: #F5F5F5;
+
+}
+
+.right-panel {
+	float: left;
+    height: 100%;
+    width: 750px;
+    border: 2px solid #eee;
+    background-color: #FCFCFC;
+
+}
+.chat-title{
+	height: 5%;
+	border-bottom: 2px solid #eee;
+}
+.chat-area,.chat-history{
+	height: 65%;
+	border-bottom: 2px solid #eee;
+	overflow: auto;
+	overflow-x:hidden;
+	word-break:break-all;
+	padding: 5px;
+}
+
+.chat-input{
+	height: 30%;
+}
+
+.chat-input .tool-bar{
+	height: 20%;
+	border-bottom: 2px solid #eee;
+}
+.chat-input .area{
+	height: 80%;
+}
+/*.chat-input .area textarea{*/
+	/*height: 70%;*/
+	/*width: 98%;*/
+	/*resize:none;*/
+	/*outline:none;*/
+	/*BORDER-BOTTOM: 0px solid; BORDER-LEFT: 0px solid; BORDER-RIGHT: 0px solid; BORDER-TOP: 0px solid;*/
+	/*overflow-x:hidden;*/
+	/*background-color: #FCFCFC;*/
+/*}*/
+.normal_textarea{
+	height: 70%;
+	width: 98%;
+	resize:none;
+	outline:none;
+	BORDER-BOTTOM: 0px solid; BORDER-LEFT: 0px solid; BORDER-RIGHT: 0px solid; BORDER-TOP: 0px solid;
+	overflow-x:hidden;
+	background-color: #FCFCFC;
+}
+
+.myhide{
+	display: none;
+}
+
+/* bubble style */        
+.sender{
+	   clear:both;
+}        
+.sender div:nth-of-type(1){
+	   float: left;        
+}        
+.sender div:nth-of-type(2){
+	   background-color: #0E90D2;
+	   float: left;
+	   margin: 0 20px 10px 15px; 
+	   padding: 10px 10px 10px 0px;  
+	   border-radius:7px;        
+}        
+.receiver{
+	   clear:both;
+}        
+.receiver div:nth-child(1){            
+		float: right;
+}
+.receiver div:nth-of-type(2){        
+	   float:right;
+	   background-color: gold;
+	   margin: 0 10px 10px 20px;
+	   padding: 10px 0px 10px 10px;
+	   border-radius:7px;        
+}
+.left_triangle{            
+	height:0px;              
+	width:0px;              
+	border-width:8px;              
+	border-style:solid;              
+	border-color:transparent #0E90D2 transparent transparent;              
+	position: relative;            
+	left:-16px;            
+	top:3px;        
+	}        
+.right_triangle{            
+		height:0px;              
+		width:0px;              
+		border-width:8px;              
+		border-style:solid;              
+		border-color:transparent transparent transparent gold;              
+		position: relative;            
+		right:-16px;            
+		top:3px;        
+}
+
+
+#file_upload{ position:absolute; z-index:1; font-size:60px;opacity:0;filter:alpha(opacity=0);margin-left:-15px;margin-top: -20px;border: 1px solid red;}
+.pic_review{
+	width: 85px;height: 75px;
+	border: 0px solid;
+	float: left;
+}
+.text_edit_mode{
+	float: left;
+	height: 70%;
+	width: 85%;
+	resize:none;
+	outline:none;
+	BORDER-BOTTOM: 0px solid; BORDER-LEFT: 0px solid; BORDER-RIGHT: 0px solid; BORDER-TOP: 0px solid;
+	overflow-x:hidden;
+	background-color: #FCFCFC;
+}
+
+
+/* qqFace */
+.comment{width:680px; margin:20px auto; position:relative}
+.comment h3{height:28px; line-height:28px}
+.com_form{width:100%; position:relative}
+.input{width:99%; height:60px; border:1px solid #ccc}
+.com_form p{height:28px; line-height:28px; position:relative}
+span.emotion{width:42px; height:20px; background:url(/static/pic/face/icon.gif) no-repeat 2px 2px; padding-left:20px; cursor:pointer}
+span.emotion:hover{background-position:2px -28px}
+.qqFace{margin-top:4px;background:#fff;padding:2px;border:1px #dfe6f6 solid;}
+.qqFace table td{padding:0px;}
+.qqFace table td img{cursor:pointer;border:1px #fff solid;}
+.qqFace table td img:hover{border:1px #0066cc solid;}

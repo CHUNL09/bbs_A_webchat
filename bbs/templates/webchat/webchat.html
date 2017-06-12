@@ -1,0 +1,425 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+{% block project_name %}
+    <a class="navbar-brand" href="{% url 'index' %}">BBS</a>
+{% endblock %}
+
+{% block nav-bar %}
+    <li class="active"><a href="#">WebChat</a></li>
+{% endblock %}
+
+{% block navbar-right %}
+    {% if request.user.is_authenticated %}
+    <li><a href="#">{{ request.user }}</a></li>
+    <li><a href="{% url 'logout' %}">Logout</a></li>
+    {% else %}
+    <li><a href="#"></a></li>
+    {% endif %}
+    <li><a href="{% url 'login' %}">登录</a></li>
+    <li><a href="{% url 'login' %}">注册</a></li>
+{% endblock %}
+
+{% block container %}
+<div id="chat-window" class="chat-window">
+    <div class="left-panel">
+        <ul class="nav nav-pills nav-stacked" role="tablist">
+            <li id="cur_contact" role="presentation"><a href="#mycontact" aria-controls="home" role="tab" data-toggle="tab">
+                <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+            </a></li>
+            <li id="cur_group" role="presentation"><a href="#mygroup" aria-controls="profile" role="tab" data-toggle="tab">
+                <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+            </a></li>
+            <li id="cur_message" role="presentation"><a href="#messages" aria-controls="messages" role="tab" >
+                <span class="glyphicon glyphicon-comment" aria-hidden="true"></span>
+            </a></li>
+        </ul>
+    </div>
+    <div class="center-panel">
+
+      <!-- Tab panes -->
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="mycontact">
+            <div class="list-group">
+              {% for friend in request.user.userprofile.friends.select_related %}
+              <a contact-type="single" contact-id="{{ friend.id }}" href="#" class="list-group-item current"><img src="/static/pic/head1.jpg" style="width:30px;height:30px;border-radius: 5px;"/><span id="contact_name" style="padding-left: 15px;">{{ friend.name }}</span><span bid="badge" class="badge myhide">0</span></a>
+              {% endfor %}
+            </div>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="mygroup">
+            <div class="list-group">
+              {% for group in request.user.userprofile.group_members.select_related %}
+              <a contact-type="group" contact-id="{{ group.id }}" href="#" class="list-group-item current"><span id="contact_name">{{ group }}</span><span bid="badge" class="badge myhide">0</span></a>
+              {% endfor %}
+            </div>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="messages">
+            <div class="list-group">
+            </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="right-panel">
+        <div class="chat-title myhide" style="text-align: center;" contact-type="" contact-id=""></div>
+        <div class="chat-area myhide"></div>
+        <div class="chat-history myhide"></div>
+        <div class="chat-input myhide">
+            <div class="tool-bar">
+                <form id="msgs" enctype="multipart/form-data">
+                <div class="btn-group" role="group" aria-label="...">
+                  <a class="btn btn-default" href="#" role="button" style="overflow: hidden">
+                    <span class="glyphicon glyphicon-picture" aria-hidden="true" ><input type="file" id="file_upload" size="1" style="cursor: pointer;"></span>
+                  </a>
+                  <a class="btn btn-default" href="#" role="button" style="overflow: hidden">
+                    <span class="emotion"></span>
+                  </a>
+                </div>
+                </form>
+            </div>
+            <div class="area">
+                <div id="preview" class=""></div>
+                <div id="qqFacearea" style="width: 390px; position: absolute"></div>
+                <textarea class="normal_textarea" id="saytext" name="saytext"></textarea>
+                <button id="send_msg" type="button" class="btn btn-default btn-sm pull-right" style="clear: both">Send(S)</button>
+            </div>
+        </div>
+
+    </div>
+    <div style="clear: both;"></div>
+</div>
+{% endblock %}
+
+{% block js %}
+var GLOBAL_MSG_BOX={'single':{},'group':{}};
+function AddSentMsgIntoBox(msg,msg_type){
+        if(msg_type=='text'){
+            console.log(msg);
+            msg=replace_em(msg);
+            console.log(msg);
+            var new_msg_ele=
+            '<div class="sender">'+
+                '<div style="width:5%">'+
+                    '<img src="/static/pic/head1.jpg" style="width:30px;height:30px;border-radius: 5px;"/>'+
+                '</div>'+
+                '<div style="width:80%">'+
+                    '<div class="left_triangle"></div>'+
+                    '<span style="color:white;display: block;font-size: 11px;font-weight:bold;font-style:italic;">'+'{{ request.user.userprofile.name }}'+'    '+new Date().toLocaleTimeString()+'</span>'+
+                    '<span style="color:white;display: block">'+msg+'</span>'+
+                '</div>'+
+            '</div>';
+        }else if(msg_type=='image'){
+            var new_msg_ele=
+            '<div class="sender">'+
+                '<div style="width:5%">'+
+                    '<img src="/static/pic/head1.jpg" style="width:30px;height:30px;border-radius: 5px;"/>'+
+                '</div>'+
+                '<div style="width:80%">'+
+                    '<div class="left_triangle"></div>'+
+                    '<span style="color:white;display: block;font-size: 11px;font-weight:bold;font-style:italic;">'+'{{ request.user.userprofile.name }}'+'    '+new Date().toLocaleTimeString()+'</span>'+
+                    '<span style="color:white;display: block"><img style="max-width:100%;max-height:100%" src="/static/upload/'+'{{ request.user.userprofile.id }}/'+ msg +'"/></span>'+
+                '</div>'+
+            '</div>';
+
+        }
+
+        $(".chat-area").append(new_msg_ele);
+        $(".chat-area").animate({
+            scrollTop: $('.chat-area')[0].scrollHeight},500);
+        if(msg_type=='image'){
+            if($("#preview").hasClass('pic_review')){
+            $("#preview").removeClass('pic_review');
+            }
+            if($(".area textarea").hasClass('text_edit_mode')){
+                $(".area textarea").removeClass('text_edit_mode');
+            }
+        }
+
+    }
+    function UploadFile(){
+        var formData=new FormData();
+        file_obj=$('#file_upload')[0].files[0]
+        formData.append('file',file_obj)
+        $.ajax({
+            url:"{% url 'file_upload' %}",
+            type:'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data){
+                console.log(data);
+                 AddSentMsgIntoBox(file_obj.name,'image');
+                SendMsg(file_obj.name,'image');
+            }
+        });
+
+    }
+    function SendMsg(msg,msg_type){
+        var contact_type=$(".chat-title").attr("contact-type");
+        var contact_id=$(".chat-title").attr("contact-id");
+        var msg_obj={
+            'from':"{{ request.user.userprofile.id}}",
+            'to':contact_id,
+            'type':contact_type,
+            'message':msg,
+            'msg_type':msg_type
+        };
+        $.post("{% url 'send_msg' %}",{data:JSON.stringify(msg_obj)},function(callback){
+            console.log(callback);
+        });
+    }
+
+    function ProcessNewMsg(data){
+        if(data){
+            for(var obj in data){
+                if(data[obj]['msg_type']=='text'){
+                    var msg=data[obj]['message'];
+                    msg=replace_em(msg);
+                    new_msg=
+                            '<div class="receiver">'+
+                                '<div style="width:5%">'+
+                                    '<img src="/static/pic/head1.jpg" style="width:30px;height:30px;border-radius: 5px;"/>'+
+                                '</div>'+
+                                '<div style="width:80%">'+
+                                    '<div class="right_triangle"></div>'+
+                                    '<span style="color:white;display: block;font-size: 11px;font-weight:bold;font-style:italic;" class="pull-right">'+data[obj]['from_name']+new Date(data[obj]['timestamp']).toLocaleTimeString()+'</span><br/>'+
+                                    '<span style="color:white;display: block">'+msg+'</span>'+
+                                '</div>'+
+                            '</div>';
+
+
+                }else if(data[obj]['msg_type']=='image'){
+                    var user_id=data[obj]['from'];
+                    var user_msg=data[obj]['message'];
+                    new_msg=
+                            '<div class="receiver">'+
+                                '<div style="width:5%">'+
+                                    '<img src="/static/pic/head1.jpg" style="width:30px;height:30px;border-radius: 5px;"/>'+
+                                '</div>'+
+                                '<div style="width:80%">'+
+                                    '<div class="right_triangle"></div>'+
+                                    '<span style="color:white;display: block;font-size: 11px;font-weight:bold;font-style:italic;" class="pull-right">'+data[obj]['from_name']+new Date(data[obj]['timestamp']).toLocaleTimeString()+'</span><br/>'+
+                                    '<span style="color:white;display: block"><img style="max-width:100%;max-height:100%" src="/static/upload/'+user_id+'/'+ user_msg +'"/></span>'+
+                                '</div>'+
+                            '</div>';
+                }
+
+                if(data[obj]['type']=='single'){
+                    if(parseInt(data[obj]['from'])==$(".chat-title").attr('contact-id') && $(".chat-title").attr('contact-type')=='single'){
+
+                            $(".right-panel .chat-area").append(new_msg);
+                        }else{
+                            if(!GLOBAL_MSG_BOX['single'][data[obj]['from']]){
+                                GLOBAL_MSG_BOX['single'][data[obj]['from']]=new_msg;
+                            }else{
+                                GLOBAL_MSG_BOX['single'][data[obj]['from']]+= new_msg;
+                            }
+                            var contact_id=parseInt(data[obj]['from']);
+                            var msg_num=$("#mycontact a[contact-id="+contact_id+"] span[bid=badge]").text();
+                            console.log(msg_num);
+                            $("#mycontact a[contact-id="+contact_id+"] span[bid=badge]").text(parseInt(msg_num)+1);
+                            if($("#mycontact a[contact-id="+contact_id+"] span[bid=badge]").hasClass('myhide')){
+                                $("#mycontact a[contact-id="+contact_id+"] span[bid=badge]").removeClass('myhide');
+                            }
+                    }
+                }else{
+                    if(parseInt(data[obj]['to'])==$(".chat-title").attr('contact-id') && $(".chat-title").attr('contact-type')=='group'){
+                         $(".right-panel .chat-area").append(new_msg);
+                    }else{
+                        if(!GLOBAL_MSG_BOX['group'][data[obj]['to']]){
+                                GLOBAL_MSG_BOX['group'][data[obj]['to']]=new_msg;
+                            }else{
+                                GLOBAL_MSG_BOX['group'][data[obj]['to']]+= new_msg;
+                            }
+                        var contact_id=parseInt(data[obj]['to']);
+                        var msg_num=$("#mygroup a[contact-id="+contact_id+"] span[bid=badge]").text();
+                        console.log(msg_num);
+                        $("#mygroup a[contact-id="+contact_id+"] span[bid=badge]").text(parseInt(msg_num)+1);
+                        if($("#mygroup a[contact-id="+contact_id+"] span[bid=badge]").hasClass('myhide')){
+                            $("#mygroup a[contact-id="+contact_id+"] span[bid=badge]").removeClass('myhide');
+                        }
+                    }
+                }
+            }
+
+        }
+
+    }
+    function GetNewMsgs(){
+        $.get("{% url 'get_new_msgs' %}",function(callback){
+            var data=JSON.parse(callback);
+            console.log(data);
+
+            ProcessNewMsg(data);
+            GetNewMsgs();
+        });
+    }
+    GetNewMsgs();
+$("body").delegate("textarea","keydown",function(e){
+    if(e.which==13){
+        var msg_text=$("textarea").val();
+        if($.trim(msg_text).length>0){
+
+            SendMsg(msg_text,'text');
+            AddSentMsgIntoBox(msg_text,'text');
+        }
+        if($(".area #preview").find('img').length!=0){
+            UploadFile();
+        }
+
+        $("textarea").val('');
+        $(".area #preview").empty();
+    }
+    });
+$("#mycontact div a,#mygroup div a").click(function(){
+    var contact_id=$(this).attr('contact-id');
+    var contact_type=$(this).attr('contact-type');
+    var contact_name=$(this).find("#contact_name").text();
+    var new_title='<span>正在和'+contact_name+'聊天</span>'
+
+    var current_id=$(".chat-title").attr('contact-id');
+    var current_type=$(".chat-title").attr('contact-type');
+
+    if(current_id){
+        GLOBAL_MSG_BOX[current_type][current_id]=$(".chat-area").html();
+    }
+    if(!GLOBAL_MSG_BOX[contact_type][contact_id]){
+        GLOBAL_MSG_BOX[contact_type][contact_id]="";
+    }
+
+
+    $(".right-panel .chat-title").html(new_title);
+    $(".right-panel .chat-area").html(GLOBAL_MSG_BOX[contact_type][contact_id]);
+    $(".right-panel .chat-input .area textarea").empty();
+    $(".chat-title").attr("contact-id",contact_id);
+    $(".chat-title").attr("contact-type",contact_type);
+    if(contact_type=="single"){
+    if(!$("#mycontact a[contact-id="+contact_id+"] span[bid=badge]").hasClass('myhide')){
+        $("#mycontact a[contact-id="+contact_id+"] span[bid=badge]").addClass('myhide');
+    }}else{
+    if(!$("#mygroup a[contact-id="+contact_id+"] span[bid=badge]").hasClass('myhide')){
+        $("#mygroup a[contact-id="+contact_id+"] span[bid=badge]").addClass('myhide');
+    }
+    }
+
+    if ($(".right-panel .chat-title").hasClass('myhide'))
+    {
+        $(".right-panel .chat-title").removeClass('myhide');
+        $(".right-panel .chat-area").removeClass('myhide');
+        $(".right-panel .chat-input").removeClass('myhide');
+
+    }
+});
+$(".left-panel ul li a").click(function(){
+    console.log('here');
+    if (!$(".right-panel .chat-title").hasClass('myhide'))
+    {
+        $(".right-panel .chat-title").addClass('myhide');
+        $(".right-panel .chat-area").addClass('myhide');
+        $(".right-panel .chat-input").addClass('myhide');
+    }
+});
+$("#send_msg").click(function(){
+    var msg=$(this).parent().find('textarea').val();
+    if($.trim(msg).length>0){
+            SendMsg(msg,'text');
+            AddSentMsgIntoBox(msg,'text');
+        }
+    if($(".area #preview").find('img').length!=0){
+            UploadFile();
+        }
+    $(".area #preview").empty();
+    $(this).parent().find('textarea').val('');
+});
+
+$("#cur_message a").click(function(e){
+
+    e.preventDefault();
+    console.log("----->");
+    $(".center-panel #messages div").empty();
+    for(var item in GLOBAL_MSG_BOX['single']){
+        if(GLOBAL_MSG_BOX['single'][item]){
+        var tmp_contact_name=$("#mycontact a[contact-id="+item+"] span[id=contact_name]").text();
+{#        var tmp_chat_win="<a href='#' class='list-group-item'>"+tmp_contact_name+"</a>";#}
+        var tmp_chat_win='<a contact-type="single" contact-id='+item+' href="#" class="list-group-item current"><img src="/static/pic/head1.jpg" style="width:30px;height:30px;border-radius: 5px;"/><span id="contact_name" style="padding-left: 15px;">'+tmp_contact_name+'</span></a>';
+        $(".center-panel #messages div").append(tmp_chat_win);
+        console.log("hello----");
+        }
+    }
+    for(var item in GLOBAL_MSG_BOX['group']){
+        if(GLOBAL_MSG_BOX['group'][item]){
+        var tmp_contact_name=$("#mygroup a[contact-id="+item+"] span[id=contact_name]").text();
+{#        var tmp_chat_win="<a href='#' class='list-group-item'>"+tmp_contact_name+"</a>";#}
+        var tmp_chat_win='<a contact-type="group" contact-id='+item+' href="#" class="list-group-item current"><span id="contact_name">'+tmp_contact_name+'</span></a>';
+        $(".center-panel #messages div").append(tmp_chat_win);
+        console.log("hello----");
+        }
+    }
+    $(this).tab('show');
+    $("#messages div a").click(function(){
+        console.log("---<>");
+        var contact_id=$(this).attr('contact-id');
+        var contact_type=$(this).attr('contact-type');
+        console.log(GLOBAL_MSG_BOX);
+        $(".right-panel .chat-history").html(GLOBAL_MSG_BOX[contact_type][contact_id]);
+        if ($(".right-panel .chat-history").hasClass('myhide'))
+        {
+            $(".right-panel .chat-history").removeClass('myhide');
+
+        }
+
+    });
+
+});
+
+/*
+$('#cur_message a,#cur_contact a').on('show.bs.tab', function() {
+  alert("调用时触发");
+});
+*/
+$('#cur_contact a,#cur_group a').on('shown.bs.tab', function() {
+  //alert("调用后触发");
+  if (!$(".right-panel .chat-history").hasClass('myhide'))
+        {
+            $(".right-panel .chat-history").addClass('myhide').empty();
+
+        }
+
+});
+
+  $( "#chat-window" ).draggable();
+
+$("#file_upload").change(function(e){
+    var file = e.target.files||e.dataTransfer.files;
+    console.log(file);
+     if(file[0]){
+         var reader = new FileReader();
+         reader.onload=function(){
+                $("<img style='max-width:100%;max-height:100%' src='"+this.result+"'/>").appendTo(".area #preview");
+
+         }
+
+        reader.readAsDataURL(file[0]);
+        if(!$("#preview").hasClass('pic_review')){
+            $("#preview").addClass('pic_review');
+        }
+        if(!$(".area textarea").hasClass('text_edit_mode')){
+            $(".area textarea").addClass('text_edit_mode');
+        }
+    }
+
+    });
+$('.emotion').qqFace({
+		id : 'facebox', //表情盒子的ID
+		assign:'saytext', //给那个控件赋值
+		path:'/static/pic/face/'	//表情存放的路径
+	});
+function replace_em(str){
+	str = str.replace(/\</g,'&lt;');
+	str = str.replace(/\>/g,'&gt;');
+{#	str = str.replace(/\n/g,'<br/>');#}
+	str = str.replace(/\[em_([0-9]*)\]/g,'<img src="/static/pic/face/$1.gif" border="0" />');
+	return str;
+}
+{#   GLOBAL_MSG_BOX={'single':{},'group':{}};#}
+{% endblock %}
+

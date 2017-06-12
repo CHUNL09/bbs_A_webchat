@@ -1,0 +1,17 @@
+{% extends 'superbbs/index.html' %}
+{% load custom_tags %}
+{% block left_articles %}
+    <h1>New Article</h1>
+    <form enctype="multipart/form-data" class="form-horizontal" method="post" action="{% url 'add_article' %}">
+    {{ article_obj }}
+    <div class="form-group">
+    <div class="col-md-3" style="margin-top: 20px;">
+      <button type="submit" class="btn btn-primary" id="s_article">Save</button>
+    </div>
+  </div>
+    </form>
+{% endblock %}
+
+{% block js %}
+
+{% endblock %}

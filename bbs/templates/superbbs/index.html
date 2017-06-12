@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+{% block project_name %}
+    <a class="navbar-brand" href="{% url 'index' %}">BBS</a>
+{% endblock %}
+
+{% block nav-bar %}
+    {% for category in category_list %}
+        {% if category.id == current_category.id %}
+            <li class="active"><a href="{% url 'category' category.id %}">{{ category.name }}</a></li>
+        {% else %}
+            <li class=""><a href="{% url 'category' category.id %}">{{ category.name }}</a></li>
+        {% endif %}
+    {% endfor %}
+    <li><a href="{% url 'webchat' %}">WebChat</a></li>
+{% endblock %}
+
+{% block navbar-right %}
+    {% if request.user.is_authenticated %}
+    <li><a href="#">{{ request.user }}</a></li>
+    <li><a href="{% url 'logout' %}">Logout</a></li>
+    {% else %}
+    <li><a href="#"></a></li>
+    {% endif %}
+    <li><a href="{% url 'login' %}">登录</a></li>
+    <li><a href="{% url 'login' %}">注册</a></li>
+{% endblock %}
+
+{% block container %}
+    <div class="row">
+        <div class="pull-left col-md-8">
+            {% block left_articles %}
+            {% for article in article_list %}
+                <div class="article_box row">
+                    <div class="col-md-4">
+                        <a class="" href="" target="_blank">
+                            <img class="article_tag_pic"  alt="{{ article.title }}" src="/media/statics/{{ article.tag_img|truncate_img_url }}" style="display: inline;">
+                        </a>
+                    </div>
+                    <div class="col-md-8 article_detail">
+                        <h4 style="margin-top: 10px"><a href="{% url 'article_details' article.id %}">{{ article.title }}</a></h4>
+                        <div class="article_item" style="">
+                            <span>{{ article.author.name }}</span>
+                            <span>{{ article.pub_date }}</span>
+                            <span>{% comment_count article as counts %}</span>
+                            <span class="glyphicon glyphicon-comment" aria-hidden="true"></span>
+                            {{ counts.comment_count }}
+                            <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+                            {{ counts.thumb_count }}
+                        </div>
+                        <div class="article_item">
+                            <span>{{ article.brief }}</span>
+                        </div>
+                        <div class="article_item pull-right">
+                            <button id="bt_1" type="button" class="btn btn-info btn-xs" onclick="window.open('{% url 'category' article.category.id %}')">{{ article.category.name }}</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            {% endblock %}
+        </div>
+        <div class="pull-left col-md-2" style="position: fixed;top: 80px;right: 40px;">
+            <div class="list-group" style="background-color: #5bc0de">
+            <a href="{% url 'add_article' %}" class="list-group-item">创建文章</a>
+            <a href="#" class="list-group-item">备选功能1</a>
+            <a href="#" class="list-group-item">备选功能2</a>
+            <a href="#" class="list-group-item">备选功能3</a>
+            <a href="#" class="list-group-item">备选功能4</a>
+            <div>
+        </div>
+    </div>
+
+{% endblock %}
